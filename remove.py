@@ -82,10 +82,8 @@ def remove_background(filename, background):
 
 background = cv2.imread("scene_bkgrnd.png", 1)
 
-i = 0
 for root, dirs, files in os.walk("/home/phiggin1/gold/images/image_raw", topdown=False):
     for name in files:
         print("Processing "+os.path.join(root, name))
         remove_background(os.path.join(root, name), background)
-        i = i +1
         break
