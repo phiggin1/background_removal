@@ -31,55 +31,42 @@ def remove_background(filename, background):
     diff = cv2.absdiff(blurred_image, blurred_background)
     gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
 
-    threshold = cv2.threshold(
-        gray, 25, 255,
-        cv2.THRESH_BINARY)[1]
-    
-    cropped_image = cv2.bitwise_and(image, image, mask = threshold)
+    threshold = cv2.threshold(gray, 25, 255, cv2.THRESH_BINARY)[1]
 
-    '''
-    #code for finding largest contour (should be object)
-    contour = findLargestContour(threshold)
-    contourImg = np.copy(image)
-    cv2.drawContours(contourImg, [contour], 0, (0, 255, 0), 2, cv2.LINE_AA, maxLevel=1)
-    
-
+   
     #try to merge together nearby contours
     _, contours, hierarchy = cv2.findContours(threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     thresh_gray = cv2.morphologyEx(threshold, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (51,51)));
     # Find contours in thresh_gray after closing the gaps
-    image, contours, hier = cv2.findContours(thresh_gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    _, contours, hier = cv2.findContours(thresh_gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     contourImg = np.copy(image)
-    #cv2.drawContours(contourImg, contours, -1, (0, 255, 0), 2, cv2.LINE_AA, maxLevel=1)
-
-    contour = findLargestContour(threshold)
-    contourImg = np.copy(image)
-    cv2.drawContours(contourImg, [contour], 0, (0, 255, 0), 2, cv2.LINE_AA, maxLevel=1)
     
-    #fill in the contours to make the mask
+    '''
+    contour = findLargestContour(threshold)
     contour_mask = np.zeros_like(threshold)
-    cv2.fillPoly(mask, contours, 255)
+    cv2.fillPoly(contour_mask, [contour], 255)
     res = cv2.bitwise_and(image, image, mask = contour_mask)
     '''
 
+    #fill in the contours to make the mask
+    contour_mask = np.zeros_like(threshold)
+    cv2.fillPoly(contour_mask, contours, 255)
+    res = cv2.bitwise_and(image, image, mask = contour_mask)
+    
 
     cv2.imshow('image', image)
     cv2.imshow('grayscale difference between background image and object image', gray)
-    cv2.imshow('mask', threshold)
-    cv2.imshow('cropped image', cropped_image)
-    #cv2.imshow('contour image', contourImg)
+    cv2.imshow('mask', contour_mask)
+    cv2.imshow('cropped image2', res)
     keyboard = cv2.waitKey(250)
     
+
     fname = filename.split('/')[-1]
     name = fname.split('.')
-    
     cv2.imwrite("./images/"+fname, image)
-    cv2.imwrite("./images/"+name[0]+"_cropped."+name[1], cropped_image)
-    cv2.imwrite("./images/"+name[0]+"_mask."+name[1], threshold)
-
-    keyboard = cv2.waitKey(250)
+    cv2.imwrite("./images/"+name[0]+"_cropped."+name[1], res)
+    cv2.imwrite("./images/"+name[0]+"_mask."+name[1], contour_mask)
     
-
 background = cv2.imread("scene_bkgrnd.png", 1)
 
 for root, dirs, files in os.walk("/home/phiggin1/gold/images/image_raw", topdown=False):
